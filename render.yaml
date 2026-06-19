@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: mediavault-backend
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile.backend
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: DB_HOST
+        value: db4free.net
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: PYTHON_PATH
+        value: python3
+      - key: DOWNLOAD_PATH
+        value: /var/www/backend/storage/downloads
+      - key: APP_ENV
+        value: production
