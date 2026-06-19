@@ -1,0 +1,136 @@
+# =============================================================================
+# docker-compose.yml — RUNS THE ENTIRE APPLICATION WITH ONE COMMAND
+# =============================================================================
+# Docker Compose is a tool for defining and running multiple containers together.
+# Each container is an isolated environment with its own OS, dependencies, etc.
+#
+# Our setup has 3 containers:
+#   1. "frontend"  — Next.js dev server (port 3000)
+#   2. "backend"   — PHP + Python server (port 8000)
+#   3. "db"        — MySQL database (port 3306)
+#
+# HOW TO USE:
+#   cd docker
+#   docker-compose up --build    ← first time (builds images)
+#   docker-compose up            ← subsequent times (faster, uses cached images)
+#   docker-compose down          ← stop and remove containers
+#   docker-compose down -v       ← stop containers AND delete database data
+#
+# DEBUGGING:
+#   docker-compose logs frontend  ← see Next.js logs
+#   docker-compose logs backend   ← see PHP logs
+#   docker-compose exec backend bash  ← open a shell inside the backend container
+# =============================================================================
+
+# "version" specifies which Docker Compose file format we are using.
+version: '3.9'
+
+
+# "services" is a map of container definitions.
+services:
+
+
+  # ── FRONTEND ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      # "context: ../frontend" means "build the image using files from the frontend folder".
+      context: ../frontend
+      # "dockerfile: ../docker/Dockerfile.frontend" specifies which Dockerfile to use.
+      dockerfile: ../docker/Dockerfile.frontend
+
+    # "ports: '3000:3000'" maps container port 3000 to host port 3000.
+    # You access the app at http://localhost:3000 on your machine.
+    ports:
+      - '3000:3000'
+
+    # "volumes" mount folders from your host machine into the container.
+    # "../frontend:/app" means: your local "frontend" folder IS the container's "/app" folder.
+    # WHY: Changes you make to files on your machine appear immediately in the container.
+    #       Without this, you would need to rebuild the Docker image after every change.
+    volumes:
+      - ../frontend:/app
+      # Use a named volume for node_modules so the container's packages are not
+      # overwritten by your host's node_modules (different OS, different binaries).
+      - frontend_node_modules:/app/node_modules
+
+    # "environment" sets environment variables inside the container.
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+
+    # "depends_on" means: start "frontend" only AFTER "backend" has started.
+    depends_on:
+      - backend
+
+
+  # ── BACKEND ───────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../docker/Dockerfile.backend
+
+    ports:
+      - '8000:8000'
+
+    volumes:
+      - ../backend:/var/www/backend
+      # Named volume so PHP vendor/ folder persists across container restarts.
+      - backend_vendor:/var/www/backend/vendor
+      # Storage volume for downloaded files.
+      - mediavault_storage:/var/www/backend/storage
+
+    environment:
+      # Database credentials — must match the "db" service below.
+      - DB_HOST=db              # "db" is the hostname of the MySQL container
+      - DB_PORT=3306
+      - DB_DATABASE=mediavault
+      - DB_USERNAME=mediavault_user
+      - DB_PASSWORD=mediavault_pass
+      - APP_ENV=development
+      - PYTHON_PATH=python3
+      - DOWNLOAD_PATH=/var/www/backend/storage/downloads
+
+    depends_on:
+      # Wait for the database to be healthy before starting the backend.
+      db:
+        condition: service_healthy
+
+
+  # ── DATABASE ──────────────────────────────────────────────────────────────
+  db:
+    # Use the official MySQL 8 image from Docker Hub.
+    image: mysql:8.0
+
+    ports:
+      - '3306:3306'
+
+    environment:
+      # These variables are read by the MySQL container on first startup.
+      # They create the database and user automatically.
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=mediavault
+      - MYSQL_USER=mediavault_user
+      - MYSQL_PASSWORD=mediavault_pass
+
+    volumes:
+      # "mysql_data" persists the database even when you stop the container.
+      - mysql_data:/var/lib/mysql
+      # Run migration SQL files automatically on first startup.
+      # MySQL looks for .sql files in /docker-entrypoint-initdb.d/ and runs them.
+      - ../database/migrations:/docker-entrypoint-initdb.d
+
+    # "healthcheck" lets Docker Compose know when MySQL is actually ready to accept connections.
+    # Without this, the backend might start before MySQL is ready and fail to connect.
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-prootpassword']
+      interval: 5s    # Check every 5 seconds
+      timeout:  3s    # Give up checking after 3 seconds
+      retries:  10    # Try 10 times before giving up
+
+
+# "volumes" declares named volumes that Docker manages.
+# Named volumes persist data between container restarts.
+volumes:
+  mysql_data:              # MySQL database files
+  mediavault_storage:      # Downloaded media files
+  frontend_node_modules:   # Frontend npm packages
+  backend_vendor:          # PHP Composer packages

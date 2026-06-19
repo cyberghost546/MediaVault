@@ -1,0 +1,30 @@
+# =============================================================================
+# requirements.txt — Python Package Dependencies
+# =============================================================================
+# Install with:  pip install -r requirements.txt
+#
+# Each package and why we need it:
+# =============================================================================
+
+# yt-dlp: the core media extraction library.
+# A maintained fork of youtube-dl that supports hundreds of sites including
+# all platforms we support (Instagram, TikTok, Facebook, Twitter, Snapchat).
+# It can extract media URLs and metadata WITHOUT requiring official API access.
+# HOW IT WORKS: yt-dlp mimics a real browser session to read the public page
+# and extract the hidden direct media URL (mp4, jpg, etc.).
+yt-dlp>=2024.7.9
+
+# requests: simple HTTP library for downloading files.
+# Used by the downloader to fetch files from CDN URLs once yt-dlp finds them.
+requests>=2.32.3
+
+# tqdm: progress bar library.
+# The downloader uses tqdm to track download progress and write it to the
+# progress JSON file that the PHP backend reads.
+tqdm>=4.66.4
+
+# Pillow: image processing library (optional but useful for generating thumbnails).
+Pillow>=10.4.0
+
+# mutagen: reads audio/video metadata (duration, bitrate, codec info).
+mutagen>=1.47.0

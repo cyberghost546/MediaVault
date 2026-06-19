@@ -1,0 +1,58 @@
+/* =============================================================================
+   globals.css — Imported by app/layout.tsx so styles apply to every page.
+   Tailwind's three directive layers:
+     @tailwind base       — Normalize/reset browser styles
+     @tailwind components — Reusable class groups (rarely used in modern Tailwind)
+     @tailwind utilities  — The utility classes like "bg-blue-500", "flex", etc.
+   ============================================================================= */
+
+/* Tell Tailwind to inject its base reset styles here. */
+@tailwind base;
+
+/* Tell Tailwind to inject any component class definitions here. */
+@tailwind components;
+
+/* Tell Tailwind to inject all utility classes here. */
+@tailwind utilities;
+
+
+/* =============================================================================
+   CUSTOM BASE STYLES
+   Applied to every element via Tailwind's @layer base.
+   ============================================================================= */
+@layer base {
+
+  /* Smooth scrolling when navigating to anchor links */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Body background and text colour — adjusts for dark mode */
+  body {
+    @apply bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white;
+    /* "font-sans" uses the Inter font we defined in tailwind.config.ts */
+    @apply font-sans antialiased;
+  }
+
+  /* Make images and videos responsive by default */
+  img, video {
+    @apply max-w-full;
+  }
+}
+
+
+/* =============================================================================
+   CUSTOM UTILITIES
+   Small helpers that are not in Tailwind's default set.
+   ============================================================================= */
+@layer utilities {
+
+  /* Clamp multi-line text to 2 lines with an ellipsis on the last line.
+     Used in MediaCard for caption text. */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}

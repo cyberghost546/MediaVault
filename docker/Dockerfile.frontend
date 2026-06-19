@@ -1,0 +1,43 @@
+# =============================================================================
+# Dockerfile.frontend — HOW TO BUILD THE FRONTEND CONTAINER
+# =============================================================================
+# A Dockerfile is a recipe for building a Docker image.
+# Each instruction creates a new layer. Docker caches layers so that if only
+# your source code changes (not package.json), it skips the slow "npm install"
+# step on the next build.
+#
+# LAYER ORDER MATTERS for caching:
+#   1. Copy package.json first
+#   2. Run npm install (cached as long as package.json doesn't change)
+#   3. Copy source code (changes on every edit)
+#   4. Start the dev server
+# =============================================================================
+
+# "FROM node:20-alpine" starts with the official Node.js 20 image.
+# "alpine" is a tiny Linux distribution (only ~5MB).
+# WHY Alpine? It produces much smaller images (faster to download/start).
+FROM node:20-alpine
+
+# Set the working directory inside the container.
+# All subsequent commands run from this folder.
+WORKDIR /app
+
+# Copy ONLY the package files first (for layer caching).
+# If package.json hasn't changed, Docker reuses the cached "npm install" layer.
+COPY package.json package-lock.json* ./
+
+# Install dependencies inside the container.
+# "--frozen-lockfile" ensures exact versions from package-lock.json are installed.
+RUN npm install --frozen-lockfile
+
+# Copy the rest of the source code.
+# This layer changes on every code edit but that's OK — it's just a file copy.
+COPY . .
+
+# "EXPOSE 3000" documents that the container listens on port 3000.
+# NOTE: This does not actually publish the port — that's done in docker-compose.yml.
+EXPOSE 3000
+
+# The command that starts the app when the container runs.
+# "npm run dev" starts Next.js in development mode with hot reload.
+CMD ["npm", "run", "dev"]

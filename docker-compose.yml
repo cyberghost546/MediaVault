@@ -1,0 +1,82 @@
+# =============================================================================
+# docker-compose.yml — ONE-COMMAND APP STARTUP
+# =============================================================================
+# Run from the project ROOT (not the docker/ subfolder):
+#
+#   docker-compose up --build    ← first time: build images + start everything
+#   docker-compose up -d         ← start in background (detached)
+#   docker-compose down          ← stop and remove containers
+#   docker-compose down -v       ← also delete all stored data
+#   docker-compose logs -f       ← follow live logs from all containers
+#
+# After it starts, open http://localhost:3000 in your browser.
+# =============================================================================
+
+services:
+
+  # ── FRONTEND  (Next.js dev server on port 3000) ───────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  # ── BACKEND  (PHP + Python on port 8000) ─────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/var/www/backend
+      - backend_vendor:/var/www/backend/vendor
+      - mediavault_storage:/var/www/backend/storage
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=mediavault
+      - DB_USERNAME=mediavault_user
+      - DB_PASSWORD=mediavault_pass
+      - APP_ENV=development
+      - PYTHON_PATH=python3
+      - DOWNLOAD_PATH=/var/www/backend/storage/downloads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── DATABASE  (MySQL 8.0 on port 3306) ────────────────────────────────────
+  db:
+    image: mysql:8.0
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=mediavault
+      - MYSQL_USER=mediavault_user
+      - MYSQL_PASSWORD=mediavault_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # SQL files here are run automatically on first startup.
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-prootpassword']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+
+# Named volumes — Docker manages these; data persists between container restarts.
+volumes:
+  mysql_data:
+  mediavault_storage:
+  frontend_node_modules:
+  backend_vendor:
