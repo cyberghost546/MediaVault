@@ -1,0 +1,55 @@
+# =============================================================================
+# .gitignore — FILES AND FOLDERS THAT SHOULD NOT BE COMMITTED TO GIT
+# =============================================================================
+# WHY: Some files contain secrets (passwords), are too large (node_modules),
+#      or are generated automatically and do not need to be tracked.
+# =============================================================================
+
+# ── ENVIRONMENT FILES (SECRETS) ──
+# Never commit these — they contain database passwords and API keys.
+.env
+.env.local
+.env.production
+*.env
+
+# ── FRONTEND ──
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/android/
+frontend/ios/
+
+# ── BACKEND PHP ──
+backend/vendor/          # Composer packages (re-installed with "composer install")
+
+# ── BACKEND STORAGE ──
+# Downloaded files and progress data should not be in git
+backend/storage/
+
+# ── PYTHON ──
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ── DATABASE ──
+*.sql.bak
+
+# ── OPERATING SYSTEM ──
+.DS_Store       # macOS folder metadata
+Thumbs.db       # Windows thumbnail cache
+desktop.ini     # Windows folder settings
+
+# ── EDITORS / IDEs ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── LOGS ──
+*.log
+logs/
+
+# ── DOCKER ──
+docker/data/
