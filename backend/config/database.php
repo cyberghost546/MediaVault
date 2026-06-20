@@ -24,23 +24,11 @@ return [
     // In Docker Compose, "db" is the service name (acts as a hostname).
     // Locally, it is "127.0.0.1" (same machine).
     'host'     => $_ENV['DB_HOST']     ?? '127.0.0.1',
-
-    // The port MySQL listens on. Default is 3306.
-    'port'     => $_ENV['DB_PORT']     ?? '3306',
-
-    // The name of the database to use. Must be created first (see migrations/).
-    'database' => $_ENV['DB_DATABASE'] ?? 'mediavault',
-
-    // The MySQL username.
-    'username' => $_ENV['DB_USERNAME'] ?? 'root',
-
-    // The MySQL password. NEVER hardcode a real password here.
+    'port'     => $_ENV['DB_PORT']     ?? '5432',
+    'database' => $_ENV['DB_DATABASE'] ?? 'postgres',
+    'username' => $_ENV['DB_USERNAME'] ?? 'postgres',
     'password' => $_ENV['DB_PASSWORD'] ?? '',
-
-    // The character set. "utf8mb4" supports emojis and all Unicode characters.
-    // WHY not just "utf8"? MySQL's "utf8" is actually only 3 bytes per character
-    // and cannot store emojis. "utf8mb4" is the real 4-byte UTF-8.
-    'charset'  => 'utf8mb4',
+    'charset'  => 'utf8',
 
     // PDO (PHP Data Objects) is the built-in PHP database abstraction layer.
     // These options control how PDO behaves.

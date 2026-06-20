@@ -24,9 +24,9 @@ RUN apk add --no-cache \
     python3-dev \
     gcc \
     musl-dev \
-    # MariaDB/MySQL client library (needed to compile PHP's pdo_mysql extension)
-    mariadb-client \
-    mariadb-dev \
+    # PostgreSQL client library (needed to compile PHP's pdo_pgsql extension)
+    postgresql-client \
+    postgresql-dev \
     # curl for downloading Composer
     curl \
     # git (for Composer packages that install from GitHub)
@@ -37,7 +37,7 @@ RUN apk add --no-cache \
 # "docker-php-ext-install" is a helper script in the official PHP images
 # that compiles and installs PHP extensions.
 # pdo = PHP Data Objects (database abstraction), pdo_mysql = MySQL driver
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_pgsql
 
 
 # ── INSTALL COMPOSER ──

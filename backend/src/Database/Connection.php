@@ -64,11 +64,10 @@ class Connection
         // to connect to MySQL.
         // Format: "mysql:host=HOST;port=PORT;dbname=DATABASE;charset=CHARSET"
         $dsn = sprintf(
-            'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+            'pgsql:host=%s;port=%s;dbname=%s',
             $config['host'],
             $config['port'],
-            $config['database'],
-            $config['charset']
+            $config['database']
         );
 
         // "try...catch" wraps the connection attempt.
